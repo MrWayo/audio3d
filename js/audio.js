@@ -41,7 +41,6 @@
             scriptProcessor,
             processedAudioData;
 
-
         var a = 0, b = 0;
         return {
             init: function () {
@@ -75,6 +74,31 @@
                 sourceNode.connect(analyser);
                 sourceNode.connect(context.destination);
 
+                var loadFile = function(elm) {
+                    var reader = new FileReader();
+                    reader.addEventListener('load', function(event) {
+                        console.log(event);
+                        // e;
+                        OC.fadeOut("downloadAnimation");
+                        // decode the data
+                        stopSound();
+                        sourceNode = context.createBufferSource();
+                        sourceNode.connect(analyser);
+                        sourceNode.connect(context.destination);
+                        context.decodeAudioData(event.target.result, function (buffer) {
+                            // when the audio is decoded play the sound
+                            playSound(buffer);
+                        }, function error() {
+                            //TODO More docu
+                            console.log("Error loading song.")
+                        });
+                    });
+                    reader.readAsArrayBuffer(elm.target.files[0]);
+                }
+                var audioLoader = document.getElementById("audio");
+                audioLoader.onchange = loadFile;
+
+
                 // load the specified sound
                 var loadSound = function (url) {
                     var request = new XMLHttpRequest();
@@ -100,6 +124,9 @@
                     sourceNode.buffer = buffer;
                     sourceNode.start(0);
                     audioVisualization.startAnimation();
+                }
+                function stopSound() {
+                    sourceNode.stop();
                 }
                 //load audio
                 loadSound("audio/belong.ogg");
